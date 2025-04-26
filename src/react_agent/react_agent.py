@@ -1,44 +1,21 @@
-import pdb
+from . import *
+from src.tools import *
+from src.tools.manager import ToolName, Tool
 from google import genai
-from pydantic import BaseModel
-from pydantic import Field
 from typing import Callable
-from typing import Union
 from typing import List
 from typing import Dict
-from enum import Enum
-from enum import auto
-from src.tools import *
+from pathlib import Path
 import json
 
-import os
-os.environ["GOOGLE_API_KEY"] = 'AIzaSyD7xy192jbZquA-bi4vCtJy3AvweL6UlK4'
-PROMPT_TEMPLATE_PATH = "C:/Users/HP/source/repos/ReAct_Framework_Implementation/ReActFrameworkImplementation/src/react_agent/react.txt"
+
+PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompt.txt"
 
 
-class ToolName(Enum):
-    wikipedia = auto()
-    google = auto()
-    none = auto()
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class Tool:
-
-    def __init__(self, name: ToolName, func: Callable[[str], str]):
-
-        self.name = name
-        self.func = func
-
-
-class Message(BaseModel):
-    """
-    Represents a message with sender role and content.
-    """
-    role: str = Field(..., description="The role of the message sender.")
-    content: str = Field(..., description="The content of the message.")
+class Message:
+    def __init__(self, role: str, content: str):
+        self.role = role
+        self.content = content
 
 
 class Agent:
@@ -56,7 +33,7 @@ class Agent:
         self.template = self.load_template()
 
     def load_template(self):
-        return read_file('C:/Users/HP/source/repos/ReAct_Framework_Implementation/ReActFrameworkImplementation/src/react_agent/react.txt')
+        return promptIo.read_file(PROMPT_TEMPLATE_PATH)
 
     def get_history(self) -> str:
         return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
@@ -65,10 +42,7 @@ class Agent:
         self.tools[name] = Tool(name, func)
 
     def run(query: str) -> str:
-        client = genai.Client()
-        gemini = client.models
-
-        agent = Agent(model=gemini)
+        agent = Agent(model=gemini.get_model())
         agent.register(ToolName.wikipedia, wiki.search)
         agent.register(ToolName.google, google.search)
 
@@ -97,7 +71,6 @@ class Agent:
         )
 
         response = self.ask_gemini(prompt)
-        print(f"Thinking => {response}")
         self.trace("assistant", f"Thought: {response}")
         self.decide(response)
 
@@ -149,7 +122,6 @@ class Agent:
             result = tool.func(query)
             observation = f"Observation from {tool_name}: {result}"
             self.trace("system", observation)
-            # Add observation to message history
             self.messages.append(Message(role="system", content=observation))
             self.think()
         else:
@@ -158,75 +130,5 @@ class Agent:
             self.think()
 
     def ask_gemini(self, prompt: str) -> str:
-
-        contents = prompt
-        response = generate(self.model, contents)
+        response = gemini.generate(self.model, prompt)
         return str(response) if response is not None else "No response from Gemini"
-
-
-def generate(model, contents):
-
-    try:
-        print("Generating response from Gemini")
-        config = _create_generation_config()
-        response = model.generate_content(
-            model="gemini-2.0-flash",
-            contents=contents,
-            config={
-                "temperature": 0.5,
-                "top_p": 1.0,
-                "top_k": 40,
-                "max_output_tokens": 256,
-                "stop_sequences": ["\n\n"],
-            }
-        )
-
-        if not response.text:
-            print("Empty response from the model")
-            return None
-
-        print("Successfully generated response")
-        return response.text
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return None
-
-
-def _create_generation_config():
-    """
-    Creates and returns a generation configuration.
-    """
-    try:
-        # generation_config = types.GenerationConfig(
-        #     max_output_tokens=8192,
-        #     top_p=1.0,
-        #     temperature=0.0
-        # )
-        return {}
-    except Exception as e:
-        print(f"Error creating generation configuration: {e}")
-        raise
-
-
-class ToolName(Enum):
-    wikipedia = auto()
-    google = auto()
-
-    def __str__(self) -> str:
-        """
-        tool name to string.
-        """
-        return self.name
-
-
-def read_file(path: str):
-    try:
-        with open(path, 'r', encoding='utf-8') as file:
-            content: str = file.read()
-        return content
-    except FileNotFoundError:
-        print(f"File not found: {path}")
-        return None
-    except Exception as e:
-        print(f"Error reading file: {e}")
-        return None

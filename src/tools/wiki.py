@@ -4,8 +4,7 @@ import json
 
 
 def search(query: str) -> Optional[str]:
-    # Initialize Wikipedia API with a user agent
-    wiki = wikipediaapi.Wikipedia(user_agent='ReAct Agents (shankar.arunp@gmail.com)',
+    wiki = wikipediaapi.Wikipedia(user_agent='ReAct Agents (voskanyannelli03@gmail.com)',
                                   language='en')
 
     try:
@@ -13,7 +12,6 @@ def search(query: str) -> Optional[str]:
         page = wiki.page(query)
 
         if page.exists():
-            # Create a dictionary with query, title, and summary
             result = {
                 "query": query,
                 "title": page.title,
@@ -32,7 +30,7 @@ def search(query: str) -> Optional[str]:
 
 
 if __name__ == '__main__':
-    queries = ["Geoffrey Hinton", "Demis Hassabis"]
+    queries = ["sun", "moon"]
 
     for query in queries:
         result = search(query)
