@@ -1,5 +1,3 @@
-
-
 import pdb
 from google import genai
 from pydantic import BaseModel
@@ -148,7 +146,6 @@ class Agent:
 
         tool = self.tools.get(tool_name)
         if tool:
-            print("===========", "result")
             result = tool.func(query)
             observation = f"Observation from {tool_name}: {result}"
             self.trace("system", observation)

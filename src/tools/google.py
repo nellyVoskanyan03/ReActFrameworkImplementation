@@ -8,41 +8,14 @@ from typing import Tuple
 
 
 class SerpAPIClient:
-    """
-    A client for interacting with the SERP API for performing search queries.
-    """
 
     def __init__(self, api_key: str):
-        """
-        Initialize the SerpAPIClient with the provided API key.
 
-        Parameters:
-        -----------
-        api_key : str
-            The API key for authenticating with the SERP API.
-        """
         self.api_key = api_key
         self.base_url = "https://serpapi.com/search.json"
 
     def __call__(self, query: str, engine: str = "google", location: str = "") -> Union[Dict[str, Any], Tuple[int, str]]:
-        """
-        Perform Google search using the SERP API.
 
-        Parameters:
-        -----------
-        query : str
-            The search query string.
-        engine : str, optional
-            The search engine to use (default is "google").
-        location : str, optional
-            The location for the search query (default is an empty string).
-
-        Returns:
-        --------
-        Union[Dict[str, Any], Tuple[int, str]]
-            The search results as a JSON dictionary if successful, or a tuple containing the HTTP status code
-            and error message if the request fails.
-        """
         params = {
             "engine": engine,
             "q": query,
