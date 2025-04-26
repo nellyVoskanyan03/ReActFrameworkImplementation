@@ -1,7 +1,7 @@
-from react_agent import run_agent
+from src.react_agent.react_agent import Agent
 if __name__ == "__main__":
     while True:
         query = input("Enter your question: ")
-        run_agent(query)
+        Agent.run(query)
         if query in ["Exit", "End"]:
             break
