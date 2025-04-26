@@ -1,10 +1,14 @@
 from typing import Any
 import json
 import requests
+import os
+from pathlib import Path
 from typing import List
 from typing import Dict
 from typing import Union
 from typing import Tuple
+
+CREDENTIALS_PATH = Path(__file__).parent.parent / 'credentials/key.json'
 
 
 class SerpAPIClient:
@@ -45,22 +49,22 @@ def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[
     ]
 
 
+def load_serp_key():
+    with open(CREDENTIALS_PATH, 'r') as file:
+        data = json.load(file)
+        return data["serp"]["key"]
+
+
 def search(search_query: str, location: str = "") -> str:
 
-    # Initialize the SERP API client
-    serp_client = SerpAPIClient(
-        'b2befce510985c105971080506a3af2b775b935beee368e8cb85b1c6f033f8fb')
+    serp_client = SerpAPIClient(load_serp_key())
 
-    # Perform the search
     results = serp_client(search_query, location=location)
 
-    # Check if the search was successful
     if isinstance(results, dict):
-        # Format and return the top search results as JSON with updated key names
         top_results = format_top_search_results(results)
         return json.dumps({"top_results": top_results}, indent=2)
     else:
-        # Handle the error response
         status_code, error_message = results
         error_json = json.dumps(
             {"error": f"Search failed with status code {status_code}: {error_message}"})
