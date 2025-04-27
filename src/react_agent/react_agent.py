@@ -42,7 +42,7 @@ class Agent:
         agent = Agent(model=gemini.get_model())
         agent.register(ToolName.wikipedia, wiki.search)
         agent.register(ToolName.google, google.search)
-
+        agent.register(ToolName.calculator, calculator.run_calculator_tool)
         answer = agent.execute(query)
         return answer
 

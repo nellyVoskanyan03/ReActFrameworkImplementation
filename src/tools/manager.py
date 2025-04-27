@@ -6,6 +6,7 @@ from typing import Callable
 class ToolName(Enum):
     wikipedia = auto()
     google = auto()
+    calculator = auto()
     none = auto()
 
     def __str__(self) -> str:
