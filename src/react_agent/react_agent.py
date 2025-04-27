@@ -1,15 +1,12 @@
-from . import *
 from src.tools import *
 from src.tools.manager import ToolName, Tool
 from google import genai
 from typing import Callable
 from typing import List
 from typing import Dict
-from pathlib import Path
 import json
-
-
-PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompt.txt"
+from src.react_agent.prompt.promptIo import get_template
+import src.react_agent.gemini as gemini
 
 
 class Message:
@@ -33,7 +30,7 @@ class Agent:
         self.template = self.load_template()
 
     def load_template(self):
-        return promptIo.read_file(PROMPT_TEMPLATE_PATH)
+        return get_template()
 
     def get_history(self) -> str:
         return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
