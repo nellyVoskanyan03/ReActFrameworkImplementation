@@ -2,18 +2,13 @@ from src.react_agent.prompt.promptIo import get_template
 from src.tools.manager import ToolName, Tool
 from src.tools import wiki, google, calculator
 import src.react_agent.gemini as gemini
+from src.react_agent.interaction import Phase, Response, Message, Role
 
 from google import genai
-from typing import Callable
-from typing import List
-from typing import Dict
+from typing import Callable, List, Dict
+from enum import Enum
 import json
-
-
-class Message:
-    def __init__(self, role: str, content: str):
-        self.role = role
-        self.content = content
+import re
 
 
 class Agent:
@@ -34,11 +29,12 @@ class Agent:
         return get_template()
 
     def get_history(self) -> str:
-        return "\n".join([f"{message.role}: {message.content}" for message in self.messages])
+        return "\n".join([f"{message.role.value}: {message.content}" for message in self.messages])
 
     def register(self, name: ToolName, func: Callable[[str], str]) -> None:
         self.tools[name] = Tool(name, func)
 
+    @staticmethod
     def run(query: str) -> str:
         agent = Agent(model=gemini.get_model())
         agent.register(ToolName.wikipedia, wiki.search)
@@ -49,7 +45,7 @@ class Agent:
 
     def execute(self, query: str) -> str:
         self.query = query
-        self.trace(role="user", content=query)
+        self.trace(role=Role.user, phase=Phase.question, content=query)
         self.think()
         return self.messages[-1].content
 
@@ -59,72 +55,82 @@ class Agent:
 
         if self.current_iteration > self.max_iterations:
             print("Reached maximum iterations. Stopping.")
-            self.trace("assistant", "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations. Here's what I know so far: " + self.get_history())
+            self.trace(Role.assistant, Phase.thought,
+                       "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations.")
+            Response(self.messages).respond()
             return
 
         prompt = self.template.format(
             query=self.query,
             history=self.get_history(),
-            tools=', '.join([str(tool.name) for tool in self.tools.values()])
+            tools=', '.join([str(tool.name.value)
+                            for tool in self.tools.values()])
         )
 
         response = self.ask_gemini(prompt)
-        self.trace("assistant", f"Thought: {response}")
+        self.trace(Role.assistant, Phase.thought, response)
         self.decide(response)
 
-    def trace(self, role: str, content: str) -> None:
-        if role != "system":
-            self.messages.append(Message(role=role, content=content))
-        print(f"{role}: {content}\n")
+    def trace(self, role: Role, phase: Phase, content: str) -> None:
+        self.messages.append(Message(role=role, phase=phase, content=content))
 
     def decide(self, response: str) -> None:
         try:
-            cleaned_response = response.strip().strip('`').strip()
-            if cleaned_response.startswith('json'):
-                cleaned_response = cleaned_response[4:].strip()
+            cleaned_response = response.strip()
+            if cleaned_response.startswith('```json'):
+                cleaned_response = cleaned_response[7:].strip()
+            if cleaned_response.startswith('```'):
+                cleaned_response = cleaned_response[3:].strip()
+            if cleaned_response.endswith('```'):
+                cleaned_response = cleaned_response[:-3].strip()
+
+            cleaned_response = re.sub(r'\s+', ' ', cleaned_response)
 
             parsed_response = json.loads(cleaned_response)
+
             if "action" in parsed_response:
                 action = parsed_response["action"]
 
-                if action == 'none':
-
-                    print(
-                        "No action needed. Proceeding to final answer.")
+                if action == "none" or action is None:
+                    print("No action needed. Proceeding to final answer.")
                     self.think()
                 else:
                     tool_name = ToolName[action['name']]
-                    self.trace("assistant", f"Action: Using {tool_name} tool")
+                    self.trace(Role.assistant, Phase.action,
+                               f"Using {tool_name} tool")
                     self.act(tool_name, action.get("input", self.query))
+
             elif "answer" in parsed_response:
-                self.trace(
-                    "assistant", f"Final Answer: {parsed_response['answer']}")
+                self.trace(Role.assistant, Phase.final,
+                           parsed_response["answer"])
+                Response(self.messages).respond()
+
             else:
                 raise ValueError("Invalid response format")
+
         except json.JSONDecodeError as e:
-            print(
-                f"Failed to parse response: {response}. Error: {str(e)}")
-            self.trace(
-                "assistant", "I encountered an error in processing. Let me try again.")
+            print(f"Failed to parse response: {response}. Error: {str(e)}")
+            self.trace(Role.assistant, Phase.thought,
+                       "I encountered an error in processing. Let me try again.")
             self.think()
+
         except Exception as e:
             print(f"Error processing response: {str(e)}")
-            self.trace(
-                "assistant", "I encountered an unexpected error. Let me try a different approach.")
+            self.trace(Role.assistant, Phase.thought,
+                       "I encountered an unexpected error. Let me try a different approach.")
             self.think()
 
     def act(self, tool_name: ToolName, query: str) -> None:
-
         tool = self.tools.get(tool_name)
         if tool:
             result = tool.func(query)
-            observation = f"Observation from {tool_name}: {result}"
-            self.trace("system", observation)
-            self.messages.append(Message(role="system", content=observation))
+            observation = f"From {tool_name.value}: {result}"
+            self.trace(Role.system, Phase.observation, observation)
             self.think()
         else:
             print(f"No tool registered for choice: {tool_name}")
-            self.trace("system", f"Error: Tool {tool_name} not found")
+            self.trace(Role.system, Phase.thought,
+                       f"Error: Tool {tool_name} not found")
             self.think()
 
     def ask_gemini(self, prompt: str) -> str:

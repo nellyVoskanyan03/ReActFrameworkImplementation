@@ -28,7 +28,7 @@ def generate(model, contents):
                 "temperature": 0.5,
                 "top_p": 1.0,
                 "top_k": 40,
-                "max_output_tokens": 256,
+                "max_output_tokens": 20000,
                 "stop_sequences": ["\n\n"],
             }
         )
