@@ -1,0 +1,6 @@
+[submodule "src/tools/mathFunctions/University-Timetabling-System"]
+	path = src/tools/mathFunctions/University-Timetabling-System
+	url = https://github.com/nellyVoskanyan03/University-Timetabling-System.git
+[submodule "src/tools/mathLib/MathFunctions"]
+	path = src/tools/mathLib/MathFunctions
+	url = https://github.com/nellyVoskanyan03/MathFunctions.git

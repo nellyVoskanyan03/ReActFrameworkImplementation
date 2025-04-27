@@ -36,5 +36,8 @@ Remember:
 - If a tool returns no results or fails, acknowledge this and consider using a different tool or approach.
 - Provide a final answer only when you're confident you have sufficient information.
 - If you cannot find the necessary information after using available tools, admit that you don't have enough information to answer the query confidently.
-- You have access to a tool called "calculator" that can perform mathematical operations: addition (+), subtraction (-), multiplication (*), and division (/).
-Whenever the user asks for a calculation involving two numbers, you MUST call the "calculator" tool instead of answering directly.
+- You have access to a tool called "calculator" that can perform mathematical operationswith specified format.
+- if the request is polynomial call calculator with 'function polynomial({{degree:coefficent, degree:coefficent...}})(num1)' input.
+- The format for calculator requests: 'operation num1 [+,-,/,*]] num2' ,'function [sin, cos, tan, cot](num1)' , 'function polynomial([coefficents])(num1)'.
+- Divide mathematical retuests into smaller operation and use the "calculator" tool.
+
