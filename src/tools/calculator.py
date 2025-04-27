@@ -59,7 +59,7 @@ class Calculator:
 
 
 def parse_function_expression(expression: str):
-    # Try to match with dictionary brackets first (polynomial)
+
     pattern_with_brackets = r"function\s+(\w+)\(\{(\s*\d+\s*:\s*\d+\s*(?:,\s*\d+\s*:\s*\d+\s*)*)\}\)(?:\(([-+]?\d*\.\d+|\d+)\))?"
     match = re.match(pattern_with_brackets, expression.strip())
     if match:
@@ -67,7 +67,6 @@ def parse_function_expression(expression: str):
         dict_text = match.group(2)
         argument2 = float(match.group(3)) if match.group(3) else None
 
-        # Parse the dictionary manually
         argument1 = {}
         for item in dict_text.split(","):
             key, value = item.split(":")
@@ -77,7 +76,6 @@ def parse_function_expression(expression: str):
 
         return function_name, argument1, argument2
 
-    # If not matched, try normal single-argument functions (sin, cos, etc.)
     pattern_simple = r"function\s+(\w+)\(([-+]?\d*\.\d+|\d+)\)"
     match = re.match(pattern_simple, expression.strip())
     if match:
@@ -86,23 +84,18 @@ def parse_function_expression(expression: str):
         argument2 = None
         return function_name, argument1, argument2
 
-    # If nothing matches
     return None, None, None
 
 
 def parse_operation_expression(expression: str):
-    # Define a regular expression to match the operation expression
     pattern = r"operation\s+([-+]?\d*\.\d+|\d+)\s*([+\-*/])\s*([-+]?\d*\.\d+|\d+)"
 
-    # Use the regular expression to search for the pattern in the expression
     match = re.match(pattern, expression.strip())
 
     if match:
-        # Extract the operands and operator
         operand1 = float(match.group(1))
         operator = match.group(2)
         operand2 = float(match.group(3))
-        print("-----------", match.group(3))
         return operand1, operator, operand2
     else:
         return None, None, None
@@ -122,14 +115,15 @@ def run_calculator_tool(arg: str) -> str:
             argument1, operation, argument2 = parse_operation_expression(arg)
 
         else:
-            return "Error: Invalid input format. Expected format: 'opration num1 [+,-,/,*]] num2' or'function [sin, cos, tg, ctg](num1)' or 'function polynomial(coefficents)(num1)'."
+            return "Error: Invalid input format. Expected format: 'opration num1 [+,-,/,*]] num2' " \
+                "or'function [sin, cos, tg, ctg](num1)'" \
+                " or 'function polynomial(coefficents)(num1)'."
 
         calculator_args = {
             "operation": operation,
             "num1": argument1,
             "num2": argument2
         }
-        print("===========", calculator_args)
         calculator = Calculator(**calculator_args)
         return calculator.calculate()
 
