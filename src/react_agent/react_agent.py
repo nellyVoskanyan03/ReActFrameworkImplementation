@@ -124,7 +124,7 @@ class Agent:
         tool = self.tools.get(tool_name)
         if tool:
             result = tool.func(query)
-            observation = f"From {tool_name.value}: {result}"
+            observation = f"From {tool_name}: {result}"
             self.trace(Role.system, Phase.observation, observation)
             self.think()
         else:

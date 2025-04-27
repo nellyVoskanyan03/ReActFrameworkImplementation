@@ -19,7 +19,6 @@ class SerpAPIClient:
         self.base_url = "https://serpapi.com/search.json"
 
     def __call__(self, query: str, engine: str = "google", location: str = "") -> Union[Dict[str, Any], Tuple[int, str]]:
-
         params = {
             "engine": engine,
             "q": query,
@@ -50,14 +49,25 @@ def format_top_search_results(results: Dict[str, Any], top_n: int = 10) -> List[
 
 
 def load_serp_key():
-    with open(CREDENTIALS_PATH, 'r') as file:
-        data = json.load(file)
-        return data["serp"]["key"]
+    try:
+        with open(CREDENTIALS_PATH, 'r') as file:
+            data = json.load(file)
+            return data.get("serp", {}).get("key")
+    except FileNotFoundError:
+        print("Error: 'key.json' file not found.")
+        return ""
+    except json.JSONDecodeError:
+        print("Error: Failed to decode JSON in 'key.json'.")
+        return ""
 
 
 def search(search_query: str, location: str = "") -> str:
+    api_key = load_serp_key()
 
-    serp_client = SerpAPIClient(load_serp_key())
+    if not api_key:
+        return {"error": "API key not found."}
+
+    serp_client = SerpAPIClient(api_key)
 
     results = serp_client(search_query, location=location)
 
@@ -66,10 +76,9 @@ def search(search_query: str, location: str = "") -> str:
         return json.dumps({"top_results": top_results}, indent=2)
     else:
         status_code, error_message = results
-        error_json = json.dumps(
-            {"error": f"Search failed with status code {status_code}: {error_message}"})
-        print(error_json)
-        return error_json
+        return {
+            "error": f"Search failed with status code {status_code}: {error_message}"
+        }
 
 
 if __name__ == "__main__":

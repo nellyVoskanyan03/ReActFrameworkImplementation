@@ -50,8 +50,7 @@ class Calculator:
         elif self.operation == Operation.evaluate_ctg:
             result = ctg(self.num1)
         elif self.operation == Operation.evaluate_polynomial:
-            result = mf.functions.Polynomial(
-                self.num1).value(self.num2)
+            result = mf.functions.Polynomial(self.num1).value(self.num2)
         else:
             return "Error: Invalid operation."
 
@@ -59,7 +58,6 @@ class Calculator:
 
 
 def parse_function_expression(expression: str):
-
     pattern_with_brackets = r"function\s+(\w+)\(\{(\s*\d+\s*:\s*\d+\s*(?:,\s*\d+\s*:\s*\d+\s*)*)\}\)(?:\(([-+]?\d*\.\d+|\d+)\))?"
     match = re.match(pattern_with_brackets, expression.strip())
     if match:
@@ -89,7 +87,6 @@ def parse_function_expression(expression: str):
 
 def parse_operation_expression(expression: str):
     pattern = r"operation\s+([-+]?\d*\.\d+|\d+)\s*([+\-*/])\s*([-+]?\d*\.\d+|\d+)"
-
     match = re.match(pattern, expression.strip())
 
     if match:
@@ -102,7 +99,6 @@ def parse_operation_expression(expression: str):
 
 
 def run_calculator_tool(arg: str) -> str:
-
     try:
         argument1 = None
         argument2 = None
@@ -110,14 +106,12 @@ def run_calculator_tool(arg: str) -> str:
 
         if arg.startswith("function"):
             operation, argument1, argument2 = parse_function_expression(arg)
-
         elif arg.startswith("operation"):
             argument1, operation, argument2 = parse_operation_expression(arg)
-
         else:
-            return "Error: Invalid input format. Expected format: 'opration num1 [+,-,/,*]] num2' " \
-                "or'function [sin, cos, tg, ctg](num1)'" \
-                " or 'function polynomial(coefficents)(num1)'."
+            return ("Error: Invalid input format. Expected format: "
+                    "'operation num1 [+,-,/,*] num2' or 'function [sin, cos, tg, ctg](num1)' "
+                    "or 'function polynomial({{degree:coefficent, degree:coefficent...}})(num1)'.")
 
         calculator_args = {
             "operation": operation,
