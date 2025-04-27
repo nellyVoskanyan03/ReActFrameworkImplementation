@@ -1,5 +1,5 @@
 from src.react_agent.prompt.promptIo import get_template
-from src.tools.manager import ToolName, Tool
+from src.tools.tool_types import ToolName, Tool
 from src.tools import wiki, google, calculator
 import src.react_agent.gemini as gemini
 from src.react_agent.interaction import Phase, Response, Message, Role
