@@ -15,7 +15,7 @@ class Agent:
     def __init__(self, model: genai,
                  max_iterations=5,
                  query="",
-                 messages: List[Message] = [],
+                 messages: List[List[Message]] = [[]],
                  tools: Dict[ToolName, Tool] = {}):
         self.model = model
         self.tools = tools
@@ -29,25 +29,23 @@ class Agent:
         return get_template()
 
     def get_history(self) -> str:
-        return "\n".join([f"{message.role.value}: {message.content}" for message in self.messages])
+        return "\n".join([f"{m.role.value}: {m.content}" for message in self.messages for m in message])
 
     def register(self, name: ToolName, func: Callable[[str], str]) -> None:
         self.tools[name] = Tool(name, func)
 
     @staticmethod
-    def run(query: str) -> str:
+    def run(query: str):
         agent = Agent(model=gemini.get_model())
         agent.register(ToolName.wikipedia, wiki.search)
         agent.register(ToolName.google, google.search)
         agent.register(ToolName.calculator, calculator.run_calculator_tool)
-        answer = agent.execute(query)
-        return answer
+        agent.execute(query)
 
-    def execute(self, query: str) -> str:
+    def execute(self, query: str):
         self.query = query
         self.trace(role=Role.user, phase=Phase.question, content=query)
         self.think()
-        return self.messages[-1].content
 
     def think(self) -> None:
         self.current_iteration += 1
@@ -57,7 +55,9 @@ class Agent:
             print("Reached maximum iterations. Stopping.")
             self.trace(Role.assistant, Phase.thought,
                        "I'm sorry, but I couldn't find a satisfactory answer within the allowed number of iterations.")
-            Response(self.messages).respond()
+            Response(self.messages[-1]).respond()
+            self.messages.append([])
+
             return
 
         prompt = self.template.format(
@@ -72,7 +72,8 @@ class Agent:
         self.decide(response)
 
     def trace(self, role: Role, phase: Phase, content: str) -> None:
-        self.messages.append(Message(role=role, phase=phase, content=content))
+        self.messages[-1].append(Message(role=role,
+                                 phase=phase, content=content))
 
     def decide(self, response: str) -> None:
         try:
@@ -103,7 +104,8 @@ class Agent:
             elif "answer" in parsed_response:
                 self.trace(Role.assistant, Phase.final,
                            parsed_response["answer"])
-                Response(self.messages).respond()
+                Response(self.messages[-1]).respond()
+                self.messages.append([])
 
             else:
                 raise ValueError("Invalid response format")
