@@ -824,6 +824,18 @@ files = [
 ]
 
 [[package]]
+name = "print-color"
+version = "0.4.6"
+description = "A simple package to print in color to the terminal"
+optional = false
+python-versions = ">=3.7,<4.0"
+groups = ["main"]
+files = [
+    {file = "print_color-0.4.6-py3-none-any.whl", hash = "sha256:494bd1cdb84daf481f0e63bd22b3c32f7d52827d8f5d9138a96bb01ca8ba9299"},
+    {file = "print_color-0.4.6.tar.gz", hash = "sha256:d3aafc1666c8d31a85fffa6ee8e4f269f5d5e338d685b4e6179915c71867c585"},
+]
+
+[[package]]
 name = "proto-plus"
 version = "1.26.1"
 description = "Beautiful, Pythonic protocol buffers"
@@ -1422,4 +1434,4 @@ requests = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "7a09394328f8137a4acae8b345fe142ab9f7a1785c4ebba62153dcebf6c9f5b6"
+content-hash = "2a887d29baa8c6b1319fdd87b85e6ccc6697ff471e7017134ddd78d86be28080"
