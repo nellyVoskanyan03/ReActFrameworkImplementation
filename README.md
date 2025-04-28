@@ -2,16 +2,12 @@
 
 This project implements an intelligent agent using ReAct (Reasoning and Acting) prompting to answer user queries based on a combination of tools like Google Search, Wikipedia, and external API calls. The agent uses reasoning to break down the query, search relevant data, and generate a final answer.
 
-## **Project Overview 🌟**
+For more information about ReAct framework read [ReAct](https://arxiv.org/pdf/2210.03629) .
 
-The agent is designed to answer complex questions by:
-1. 🤔 Reasoning about the query.
-2. 🔍 Using external tools (Google, Wikipedia, Calculator) to gather data.
-3. 🧩 Combining the results to provide a coherent and accurate response.
+## 🛠️ Project Structure
 
-The agent follows an iterative approach:
-- 🔄 It generates an initial answer based on available data.
-- 📈 If more information is needed, it refines its answer by performing additional searches or using other tools.
+- `src/tools/`: Contains implementations for Google Search (via SERP API), Wikipedia search and Calculator tool which uses [MathFunctions](https://github.com/nellyVoskanyan03/MathFunctions) submodule.
+- `src/react_agent/`: Houses the core ReAct agent implementation.
 
 ## **Features 🚀**
 - **ReAct Prompting**: The agent can reason through a problem by using a chain of thought approach, iterating over multiple steps to gather more data if necessary.
@@ -50,33 +46,53 @@ The agent follows an iterative approach:
 ## **Getting Started ⚙️**
 
 To run this project, you'll need:
-1. **Python 3.x** 🐍
-2. **API Keys** 🔑: Set up Gemini and Serp API keys.
-3. **Dependencies** 📦: Install the required Python libraries using `pip`.
+1. **Python 3.9+** 
+2. **API Keys**: Set up Gemini and Serp API keys.
 
-### Steps to Set Up:
+### Installation
 
-1. Clone the repository:
-   Use the following command to clone the repository and initialize its submodules (MathFunctions):
-    ```sh
-    git clone --recurse-submodules https://github.com/nellyVoskanyan03/ReActFrameworkImplementation.git
+1. Clone the repository: Use the following command to clone the repository and initialize its submodules (MathFunctions):
+   ```
+   git clone --recurse-submodules https://github.com/nellyVoskanyan03/ReActFrameworkImplementation.git
+   cd ReActFrameworkImplementation
+   ```
+    Pulling submodules: Use the following command to pull commits that include submodules (MathFunctions):
     ```
-2. Pulling submodules:
-    Use the following command to pull commits that include submodules (MathFunctions):
-    ```sh
     git pull --rebase --recurse-submodules
     ```
-3. Install the dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+2. Set up a virtual environment:
+   ```
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
+   ```
 
-4. Set up your API keys:
+3. Install Poetry (if not already installed):
+   ```
+   pip install poetry
+   ```
+
+4. Install project dependencies:
+   ```
+   poetry install
+   ```
+
+5. Set up environment variables:
+   ```
+     export PYTHONDONTWRITEBYTECODE=1
+     export PYTHONPATH=$PYTHONPATH:.
+   ```
+
+### Setting up Credentials
+
    - Navigate to the `src` directory and create a `credentials` directory if it doesn't exist:
      ```bash
      cd src
      mkdir credentials
+     cd credentials
      ```
+   - Sign up for a SERP API account at https://serpapi.com/.
+   - Obtain your API key from the dashboard.
+   - Add your SERP API token in the following format:
    - Inside the `credentials` directory, create a `key.json` file with your API keys:
       ```json
       {
@@ -89,18 +105,9 @@ To run this project, you'll need:
       }
       ```
 
-5. Set up a virtual environment:
-    ```sh
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-    ```
-6. Set up environment variables:
-   ```sh
-   export PYTHONDONTWRITEBYTECODE=1
-   export PYTHONPATH=$PYTHONPATH:.
-
 ## 🖥️ Usage
- Run the ReAct agent:
+ Run for continuous communication with the ReAct agent:
    ```
    python -m src
    ```
+
